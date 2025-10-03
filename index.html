@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Documentos</title>
+    <!-- Para PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="icon-192x192.png"> <!-- Adicione um ícone real aqui -->
+    <!-- CSS com estilo glassmorphism -->
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #e0eafc, #cfdef3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        form {
+            display: grid;
+            gap: 15px;
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        label {
+            font-weight: bold;
+            color: #444;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            text-align: left;
+        }
+        .items-table th {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .total {
+            font-weight: bold;
+            text-align: right;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        button {
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        #preview {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        #actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            form {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Estilos para impressão */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #preview, #preview * {
+                visibility: visible;
+            }
+            #preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                border: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+    <!-- Bibliotecas para PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Documentos</h1>
+        <form id="budgetForm">
+            <div class="section">
+                <label for="docType">Tipo de Documento:</label>
+                <select id="docType">
+                    <option value="Orçamento">Orçamento</option>
+                    <option value="Pedido de Venda">Pedido de Venda</option>
+                </select>
+            </div>
+
+            <div class="section">
+                <h3>Dados do Vendedor</h3>
+                <label for="sellerName">Nome do Vendedor:</label>
+                <input type="text" id="sellerName" value="Seu Nome">
+
+                <label for="sellerPhone">Telefone do Vendedor:</label>
+                <input type="tel" id="sellerPhone">
+
+                <label for="sellerEmail">Email do Vendedor:</label>
+                <input type="email" id="sellerEmail">
+
+                <label for="company">Nome da Empresa:</label>
+                <input type="text" id="company" value="Sua Empresa Ltda">
+
+                <label for="companyAddress">Endereço da Empresa:</label>
+                <textarea id="companyAddress"></textarea>
+            </div>
+
+            <div class="section">
+                <h3>Dados do Cliente</h3>
+                <label for="client">Nome do Cliente:</label>
+                <input type="text" id="client">
+
+                <label for="clientPhone">Telefone do Cliente:</label>
+                <input type="tel" id="clientPhone">
+
+                <label for="clientEmail">Email do Cliente:</label>
+                <input type="email" id="clientEmail">
+
+                <label for="clientDoc">CPF/CNPJ do Cliente:</label>
+                <input type="text" id="clientDoc">
+
+                <label for="address">Endereço do Cliente:</label>
+                <textarea id="address"></textarea>
+            </div>
+
+            <div class="section">
+                <label>Itens:</label>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Quantidade</th>
+                            <th>Preço Unitário</th>
+                            <th>Total</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        <tr>
+                            <td><input type="text" class="desc"></td>
+                            <td><input type="number" class="qty" value="1" min="1"></td>
+                            <td><input type="number" class="price" value="0" step="0.01"></td>
+                            <td class="subtotal">0.00</td>
+                            <td><button type="button" class="remove">Remover</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" id="addItem">Adicionar Item</button>
+                <div class="total">Total: R$ <span id="total">0.00</span></div>
+            </div>
+
+            <button type="button" id="generate">Gerar Documento</button>
+        </form>
+
+        <div id="preview" style="display: none;">
+            <h2 id="prevDocType">Orçamento</h2>
+            <div>
+                <strong>Dados do Vendedor:</strong><br>
+                <span id="prevSellerName"></span><br>
+                Telefone: <span id="prevSellerPhone"></span><br>
+                Email: <span id="prevSellerEmail"></span><br>
+                Empresa: <span id="prevCompany"></span><br>
+                Endereço: <span id="prevCompanyAddress"></span>
+            </div>
+            <div style="margin-top: 20px;">
+                <strong>Dados do Cliente:</strong><br>
+                <span id="prevClient"></span><br>
+                Telefone: <span id="prevClientPhone"></span><br>
+                Email: <span id="prevClientEmail"></span><br>
+                CPF/CNPJ: <span id="prevClientDoc"></span><br>
+                Endereço: <span id="prevAddress"></span>
+            </div>
+            <table class="items-table" style="margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Quantidade</th>
+                        <th>Preço Unitário</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="prevItems"></tbody>
+            </table>
+            <div class="total">Total: R$ <span id="prevTotal"></span></div>
+        </div>
+
+        <div id="actions" style="display: none;">
+            <button id="print">Imprimir</button>
+            <button id="savePdf">Salvar como PDF</button>
+        </div>
+    </div>
+
+    <script>
+        // Registro do Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed: ', err));
+            });
+        }
+
+        // Funções JS
+        const form = document.getElementById('budgetForm');
+        const itemsBody = document.getElementById('itemsBody');
+        const totalSpan = document.getElementById('total');
+        const addItemBtn = document.getElementById('addItem');
+        const generateBtn = document.getElementById('generate');
+        const preview = document.getElementById('preview');
+        const actions = document.getElementById('actions');
+        const printBtn = document.getElementById('print');
+        const savePdfBtn = document.getElementById('savePdf');
+        const docTypeSelect = document.getElementById('docType');
+
+        function calculateTotal() {
+            let total = 0;
+            itemsBody.querySelectorAll('tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.qty').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                const subtotal = qty * price;
+                row.querySelector('.subtotal').textContent = subtotal.toFixed(2);
+                total += subtotal;
+            });
+            totalSpan.textContent = total.toFixed(2);
+            return total;
+        }
+
+        addItemBtn.addEventListener('click', () => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="desc"></td>
+                <td><input type="number" class="qty" value="1" min="1"></td>
+                <td><input type="number" class="price" value="0" step="0.01"></td>
+                <td class="subtotal">0.00</td>
+                <td><button type="button" class="remove">Remover</button></td>
+            `;
+            itemsBody.appendChild(row);
+            attachListeners();
+        });
+
+        function attachListeners() {
+            itemsBody.querySelectorAll('.qty, .price').forEach(input => {
+                input.addEventListener('input', calculateTotal);
+            });
+            itemsBody.querySelectorAll('.remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (itemsBody.children.length > 1) {
+                        btn.closest('tr').remove();
+                        calculateTotal();
+                    }
+                });
+            });
+        }
+
+        attachListeners();
+
+        generateBtn.addEventListener('click', () => {
+            const docType = docTypeSelect.value;
+            const sellerName = document.getElementById('sellerName').value;
+            const sellerPhone = document.getElementById('sellerPhone').value;
+            const sellerEmail = document.getElementById('sellerEmail').value;
+            const company = document.getElementById('company').value;
+            const companyAddress = document.getElementById('companyAddress').value;
+            const client = document.getElementById('client').value;
+            const clientPhone = document.getElementById('clientPhone').value;
+            const clientEmail = document.getElementById('clientEmail').value;
+            const clientDoc = document.getElementById('clientDoc').value;
+            const address = document.getElementById('address').value;
+            const total = calculateTotal();
+
+            document.getElementById('prevDocType').textContent = docType;
+            document.getElementById('prevSellerName').textContent = sellerName;
+            document.getElementById('prevSellerPhone').textContent = sellerPhone;
+            document.getElementById('prevSellerEmail').textContent = sellerEmail;
+            document.getElementById('prevCompany').textContent = company;
+            document.getElementById('prevCompanyAddress').textContent = companyAddress;
+            document.getElementById('prevClient').textContent = client;
+            document.getElementById('prevClientPhone').textContent = clientPhone;
+            document.getElementById('prevClientEmail').textContent = clientEmail;
+            document.getElementById('prevClientDoc').textContent = clientDoc;
+            document.getElementById('prevAddress').textContent = address;
+
+            const prevItems = document.getElementById('prevItems');
+            prevItems.innerHTML = '';
+            itemsBody.querySelectorAll('tr').forEach(row => {
+                const desc = row.querySelector('.desc').value;
+                const qty = row.querySelector('.qty').value;
+                const price = row.querySelector('.price').value;
+                const subtotal = row.querySelector('.subtotal').textContent;
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${desc}</td>
+                    <td>${qty}</td>
+                    <td>${price}</td>
+                    <td>${subtotal}</td>
+                `;
+                prevItems.appendChild(newRow);
+            });
+
+            document.getElementById('prevTotal').textContent = total.toFixed(2);
+
+            preview.style.display = 'block';
+            actions.style.display = 'flex';
+        });
+
+        printBtn.addEventListener('click', () => {
+            window.print();
+        });
+
+        savePdfBtn.addEventListener('click', () => {
+            html2canvas(preview).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF();
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`${docTypeSelect.value.toLowerCase().replace(' ', '_')}.pdf`);
+            });
+        });
+    </script>
+</body>
+</html>
