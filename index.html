@@ -8,104 +8,148 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
     <link rel="apple-touch-icon" href="icon-192x192.png"> <!-- Adicione um ícone real aqui -->
-    <!-- CSS com estilo glassmorphism -->
+    <!-- CSS com estilo glassmorphism e layout ERP -->
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #e0eafc, #cfdef3);
+            padding: 15px;
+            background: linear-gradient(135deg, #e6e9f0, #d8e1f3);
             display: flex;
             justify-content: center;
-            align-items: center;
             min-height: 100vh;
         }
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 20px;
+            color: #2a2a2a;
+            font-size: 1.8em;
+            margin: 0 0 20px;
         }
         form {
             display: grid;
-            gap: 15px;
+            gap: 10px;
         }
         .section {
-            background: rgba(255, 255, 255, 0.3);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.25);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .section h3 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
         }
         label {
-            font-weight: bold;
-            color: #444;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9em;
+            margin-bottom: 4px;
+            display: block;
         }
         input, textarea, select {
             width: 100%;
-            padding: 10px;
+            padding: 6px;
             box-sizing: border-box;
             border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
         }
         .items-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
+            font-size: 0.9em;
         }
         .items-table th, .items-table td {
             border: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 10px;
+            padding: 6px;
             text-align: left;
         }
         .items-table th {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+        }
+        .items-table input {
+            padding: 4px;
         }
         .total {
-            font-weight: bold;
+            font-weight: 600;
             text-align: right;
-            font-size: 1.2em;
+            font-size: 1.1em;
             margin-top: 10px;
+            color: #333;
         }
         button {
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 0.9em;
             transition: opacity 0.3s;
         }
         button:hover {
             opacity: 0.9;
         }
         #preview {
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 20px;
+            padding: 15px;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 0.9em;
         }
         #actions {
             display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
+        }
+        .add-payment-term {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        #newPaymentTerm {
+            flex-grow: 1;
+        }
+        #addPaymentTermBtn {
+            background: linear-gradient(135deg, #38a169, #2f855a);
         }
         @media (max-width: 600px) {
             .container {
-                padding: 20px;
+                padding: 15px;
             }
-            form {
+            .grid {
                 grid-template-columns: 1fr;
+            }
+            .add-payment-term {
+                flex-direction: column;
+            }
+            .items-table th, .items-table td {
+                padding: 4px;
+                font-size: 0.85em;
             }
         }
         /* Estilos para impressão */
@@ -136,47 +180,91 @@
         <h1>Gerador de Documentos</h1>
         <form id="budgetForm">
             <div class="section">
-                <label for="docType">Tipo de Documento:</label>
-                <select id="docType">
-                    <option value="Orçamento">Orçamento</option>
-                    <option value="Pedido de Venda">Pedido de Venda</option>
-                </select>
+                <div class="grid">
+                    <div>
+                        <label for="docType">Tipo de Documento:</label>
+                        <select id="docType">
+                            <option value="Orçamento">Orçamento</option>
+                            <option value="Pedido de Venda">Pedido de Venda</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <div class="section">
                 <h3>Dados do Vendedor</h3>
-                <label for="sellerName">Nome do Vendedor:</label>
-                <input type="text" id="sellerName" value="Seu Nome">
-
-                <label for="sellerPhone">Telefone do Vendedor:</label>
-                <input type="tel" id="sellerPhone">
-
-                <label for="sellerEmail">Email do Vendedor:</label>
-                <input type="email" id="sellerEmail">
-
-                <label for="company">Nome da Empresa:</label>
-                <input type="text" id="company" value="Sua Empresa Ltda">
-
-                <label for="companyAddress">Endereço da Empresa:</label>
-                <textarea id="companyAddress"></textarea>
+                <div class="grid">
+                    <div>
+                        <label for="sellerName">Nome do Vendedor:</label>
+                        <input type="text" id="sellerName" value="Seu Nome">
+                    </div>
+                    <div>
+                        <label for="sellerPhone">Telefone:</label>
+                        <input type="tel" id="sellerPhone">
+                    </div>
+                    <div>
+                        <label for="sellerEmail">Email:</label>
+                        <input type="email" id="sellerEmail">
+                    </div>
+                    <div>
+                        <label for="company">Empresa:</label>
+                        <input type="text" id="company" value="Sua Empresa Ltda">
+                    </div>
+                    <div>
+                        <label for="companyAddress">Endereço da Empresa:</label>
+                        <textarea id="companyAddress"></textarea>
+                    </div>
+                </div>
             </div>
 
             <div class="section">
                 <h3>Dados do Cliente</h3>
-                <label for="client">Nome do Cliente:</label>
-                <input type="text" id="client">
-
-                <label for="clientPhone">Telefone do Cliente:</label>
-                <input type="tel" id="clientPhone">
-
-                <label for="clientEmail">Email do Cliente:</label>
-                <input type="email" id="clientEmail">
-
-                <label for="clientDoc">CPF/CNPJ do Cliente:</label>
-                <input type="text" id="clientDoc">
-
-                <label for="address">Endereço do Cliente:</label>
-                <textarea id="address"></textarea>
+                <div class="grid">
+                    <div>
+                        <label for="client">Nome do Cliente:</label>
+                        <input type="text" id="client">
+                    </div>
+                    <div>
+                        <label for="clientPhone">Telefone:</label>
+                        <input type="tel" id="clientPhone">
+                    </div>
+                    <div>
+                        <label for="clientEmail">Email:</label>
+                        <input type="email" id="clientEmail">
+                    </div>
+                    <div>
+                        <label for="clientDoc">CPF/CNPJ:</label>
+                        <input type="text" id="clientDoc">
+                    </div>
+                    <div>
+                        <label for="address">Endereço:</label>
+                        <textarea id="address"></textarea>
+                    </div>
+                    <div>
+                        <label for="paymentMethod">Forma de Pagamento:</label>
+                        <select id="paymentMethod">
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Boleto">Boleto</option>
+                            <option value="Transferência Bancária">Transferência Bancária</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="paymentTerms">Condição de Pagamento:</label>
+                        <select id="paymentTerms">
+                            <option value="À vista">À vista</option>
+                            <option value="30 dias">30 dias</option>
+                            <option value="60 dias">60 dias</option>
+                            <option value="Parcelado em 2x">Parcelado em 2x</option>
+                            <option value="Parcelado em 3x">Parcelado em 3x</option>
+                        </select>
+                        <div class="add-payment-term">
+                            <input type="text" id="newPaymentTerm" placeholder="Nova condição">
+                            <button type="button" id="addPaymentTermBtn">Adicionar</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="section">
@@ -218,15 +306,17 @@
                 Empresa: <span id="prevCompany"></span><br>
                 Endereço: <span id="prevCompanyAddress"></span>
             </div>
-            <div style="margin-top: 20px;">
+            <div style="margin-top: 15px;">
                 <strong>Dados do Cliente:</strong><br>
                 <span id="prevClient"></span><br>
                 Telefone: <span id="prevClientPhone"></span><br>
                 Email: <span id="prevClientEmail"></span><br>
                 CPF/CNPJ: <span id="prevClientDoc"></span><br>
-                Endereço: <span id="prevAddress"></span>
+                Endereço: <span id="prevAddress"></span><br>
+                Forma de Pagamento: <span id="prevPaymentMethod"></span><br>
+                Condição de Pagamento: <span id="prevPaymentTerms"></span>
             </div>
-            <table class="items-table" style="margin-top: 20px;">
+            <table class="items-table" style="margin-top: 15px;">
                 <thead>
                     <tr>
                         <th>Descrição</th>
@@ -267,6 +357,9 @@
         const printBtn = document.getElementById('print');
         const savePdfBtn = document.getElementById('savePdf');
         const docTypeSelect = document.getElementById('docType');
+        const paymentTermsSelect = document.getElementById('paymentTerms');
+        const newPaymentTermInput = document.getElementById('newPaymentTerm');
+        const addPaymentTermBtn = document.getElementById('addPaymentTermBtn');
 
         function calculateTotal() {
             let total = 0;
@@ -308,6 +401,19 @@
             });
         }
 
+        // Adicionar nova condição de pagamento
+        addPaymentTermBtn.addEventListener('click', () => {
+            const newTerm = newPaymentTermInput.value.trim();
+            if (newTerm && !Array.from(paymentTermsSelect.options).some(option => option.value === newTerm)) {
+                const option = document.createElement('option');
+                option.value = newTerm;
+                option.textContent = newTerm;
+                paymentTermsSelect.appendChild(option);
+                paymentTermsSelect.value = newTerm; // Selecionar a nova condição
+                newPaymentTermInput.value = ''; // Limpar o input
+            }
+        });
+
         attachListeners();
 
         generateBtn.addEventListener('click', () => {
@@ -322,6 +428,8 @@
             const clientEmail = document.getElementById('clientEmail').value;
             const clientDoc = document.getElementById('clientDoc').value;
             const address = document.getElementById('address').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const paymentTerms = document.getElementById('paymentTerms').value;
             const total = calculateTotal();
 
             document.getElementById('prevDocType').textContent = docType;
@@ -335,6 +443,8 @@
             document.getElementById('prevClientEmail').textContent = clientEmail;
             document.getElementById('prevClientDoc').textContent = clientDoc;
             document.getElementById('prevAddress').textContent = address;
+            document.getElementById('prevPaymentMethod').textContent = paymentMethod;
+            document.getElementById('prevPaymentTerms').textContent = paymentTerms;
 
             const prevItems = document.getElementById('prevItems');
             prevItems.innerHTML = '';
